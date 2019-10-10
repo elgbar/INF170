@@ -1,0 +1,31 @@
+from the set SHORTSEA_MUN_C7_V3_HE_1.txt
+Lower bound 1476444.00
+best known  1476444
+
+the set of ships is denoted by V, 
+and the capacity ofship v∈V is K_v.
+
+If we let i denote a cargo with the relevant amount of Q_i, 
+there is a port i corresponding to the loading port and a port i+n corresponding to the unloading port, with n being the number of cargoes.
+
+The set of loading ports is denoted by NP 
+and the set of unloading ports is denoted by ND.
+
+The set of ports that can be visited by ship v is N_v 
+and this set includes an origin port o(v)
+and an artificial destination port d(v).
+
+The set of arcs that ship v can traverse is A_v. 
+We also introduce the shorthand N‾P_v=N‾P∩N_v for loadingports that can be visited by ship v 
+and N‾D_v=N‾D∩N_v for unloading ports that can be visited by ship v.
+
+Each port has a time window [T__i,T‾_i].
+The cost of sailing from i to j using  ship v is C_ijv 
+and  the  associated  travel  time  is T_ijv.
+The  time  at  which service begins at port i using ship v is t_iv 
+and l_iv is the total load on board after completing service at port i using ship v.
+
+The variables x_ijv are binary flow  variables,  indicating  whether  ship v moves  directly  from  port i to  port j.
+Binary variables y_i indicate whether cargo i is transported by the available vessel fleet.
+
+If the cargo is not transported with the available vessel fleet, a cost C‾S_i incurred. For industrial shipping, this corresponds to the cost of using spotcharter to transport the cargo.
