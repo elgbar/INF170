@@ -1,4 +1,5 @@
 param ports := 39;
+param cargoes := 7;
 
 param:  #O(v)                      #K_v
     V: home_port    start_time   capacity :=
