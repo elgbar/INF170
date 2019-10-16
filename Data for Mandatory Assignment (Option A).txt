@@ -18,13 +18,13 @@
 3,1,2,3,4,5,6,7
 
 # for each cargo: cargo index, origin port, destination port, size, cost of not transporting, lowerbound timewindow for pickup, upper_timewindow for pickup, lowerbound timewindow for delivery, upper_timewindow for delivery
-1,17,37,4601,790000,345,417,345,1006
-2,33,36,13444,430790,96,168,96,529
-3,17,27,6596,200354,715,787,715,1089
-4,6,1,11052,275455,0,72,0,435
-5,38,33,6643,642740,107,179,107,593
-6,10,38,14139,587198,300,372,300,801
-7,26,6,5310,359885,178,250,178,567
+1,17    ,37 ,4601,  790000,         345,    417,        345,    1006
+2,33    ,36 ,13444, 430790,         96,     168,        96,     529
+3,17    ,27 ,6596,  200354,         715,    787,        715,    1089
+4,6     ,1  ,11052, 275455,         0,      72,         0,      435
+5,38    ,33 ,6643,  642740,         107,    179,        107,    593
+6,10    ,38 ,14139, 587198,         300,    372,        300,    801
+7,26    ,6  ,5310,  359885,         178,    250,        178,    567
 
 # port times and costs: vessel, cargo, origin port time (in hours), origin port costs (in �), destination port time (in hours), destination port costs (in �)
 1,1,13,23768,16,29040
