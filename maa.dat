@@ -8,7 +8,7 @@ param:  #O(v)                      #K_v
     3   31           0             16500
 ;
         #set N_P    #set N_D             
-param:  #O(v),      #D(v)       #Q      #C‾S_i      #T lower        #T upper           #T lower     #T upper 
+param:                          #Q      #C‾S_i      #T lower        #T upper           #T lower     #T upper 
     C:  origin_port dest_port   size    nt_cost    lower_pickup    upper_pickup    lower_delivery  upper_delivery :=
     1  	17  	    37      	4601  	790000     345  	        417              345  	         1006
     2  	33  	    36      	13444  	430790     96  	            168              96  	         529
@@ -20,25 +20,25 @@ param:  #O(v),      #D(v)       #Q      #C‾S_i      #T lower        #T upper  
 ; 
 
 param: N: cargo port lower_time  upper_time :=
-       1    1   17   345  	        417
-       2    2   33   96  	        168
-       3    3   17   715  	        787 
-       4    4   6    0  	        72
-       5    5   38   107  	        179
-       6    6   10   300  	        372
-       7    7   26   178  	        250
-       #
-       8    1   37   345  	        1006
-       9    2   36   96  	        529
-       10   3   27   715  	        1089 
-       11   4   1    0  	        435
-       12   5   33   107  	        593
-       13   6   38   300  	        801
-       14   7   6    178  	        567
+       -1   0   0    0           0 #home
+       0    0   0    0           0 #dest
+       1    1   17   345  	     417
+       2    2   33   96  	     168
+       3    3   17   715  	     787 
+       4    4   6    0  	     72
+       5    5   38   107  	     179
+       6    6   10   300  	     372
+       7    7   26   178  	     250
+
+       8    1   37   345  	     1006
+       9    2   36   96  	     529
+       10   3   27   715  	     1089 
+       11   4   1    0  	     435
+       12   5   33   107  	     593
+       13   6   38   300  	     801
+       14   7   6    178  	     567
 ;
 
-
-#N_V?#t_iv(?)            #l_iv (?)
 param can_transport:
       1 2 3 4 5 6 7 :=
     1 1 0 1 0 0 0 1
