@@ -67,6 +67,11 @@ param travel_cost {A} >= 0;           #travel cost (in �)
 set NV := {v in V, i in P: (i == dv || i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i)};
 set Av := {v in V, (v,i) in NV, (v,j) in NV: j <> home_port[v] && i <> dv};
 
+set NP := {i in P: exists {c in C} origin_port[c] == i};
+set ND := {i in P: exists {c in C} dest_port[c] == i};
+
+set NPV := {v in V, i in NP: exists {c in C: can_transport[v,c]} origin_port[c] == i};
+set NDV := {v in V, i in ND: exists {c in C: can_transport[v,c]} dest_port[c] == i};
 
 var t {V, N} >= 0; #when vessel v is at node p 
 var l {V, N} >= 0; #size of cargo for vessel v at node p
