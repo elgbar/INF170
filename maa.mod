@@ -65,7 +65,7 @@ param travel_time {A} >= 0;           #travel time (in hours)
 param travel_cost {A} >= 0;           #travel cost (in �)
 
 set NV := {v in V, i in P: (i == dv || i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i)};
-set Av := {v in V, (v,i) in NV, (v,j) in NV: j <> home_port[v]};
+set Av := {v in V, (v,i) in NV, (v,j) in NV: j <> home_port[v] && i <> dv};
 
 
 var t {V, N} >= 0; #when vessel v is at node p 
@@ -97,25 +97,17 @@ subject to all_cargo_handled {c in C, i in {port[c]}}:
 #(3)
 #all vessels move from home port to any other port (or D(v))
 subject to vessels_move_from_home_port {v in V}:
-    sum {j in P:
-            home_port[v] <> j &&
-            (j==dv || exists {n in N: can_transport[v,cargo[n]]} port[n] == j)
-        }
-    x[home_port[v], j, v] = 1;
+    sum {(v,j) in NV diff {(v,home_port[v])}} x[home_port[v], j, v] = 1;
 
 #(4)
 #if we go into a port we go out of it (minus home and destination port)
-subject to connected_route {v in V, (v,i) in NV diff {(v,home_port[v]),(v,dv)} }:
+subject to connected_route {v in V, (v,i) in NV diff {(v,home_port[v]),(v,dv)}}:
     sum {(v,i,j) in Av} x[i,j,v] - sum {(v,j,i) in Av} x[j,i,v] = 0;
 
-#(5) (maybe broken 31 -> 40 for v 3)
+#(5)
 #all vessels moves to d(v) eventually
 subject to arrive {v in V}:
-    sum {i in P:
-            dv <> i &&
-            (i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i)
-        }
-    x[i,dv,v] == 1;
+    sum {(v,i) in NV diff {(v,dv)}} x[i,dv,v] == 1;
 
 #(6)
 #prev port is i 
@@ -129,7 +121,7 @@ subject to loading
     }:
     l[v,i] + size[j] - l[v,j] <= capacity[v] * (1 - x[port[i],port[j],v]);
 
-# #(7)
+#(7)
 subject to unloading 
     {v in V, j in C, i in N:
         can_transport[v,cargo[i]] &&
@@ -154,16 +146,16 @@ subject to total_travel_time
     t[v,i] + (travel_time[v,port[i],port[j]] + port_time[v,j]) - t[v,j] 
         <= (upper_time[i] + (travel_time[v,port[i],port[j]] + port_time[v,j])) * (1-x[port[i], port[j], v]);
 
-# #(10)
-# #you should visit loading and unloading with the same ship
+#(10)
+#you should visit loading and unloading with the same ship
 subject to same_ship_loaded {v in V, c in C, i in {port[c]},npi in {port[c+cargoes]}: 
                 can_transport[v, c]
             }:
     sum {(v,i  ,j) in Av} x[i  ,j,v] -
     sum {(v,npi,j) in Av} x[npi,j,v] = 0;
 
-# #(11)
-# #don't unload before you load
+#(11)
+#don't unload before you load
 subject to load_order 
     {v in V, c in C, i in {port[c]}, npi in {port[c+cargoes]}: 
         can_transport[v,c]
@@ -184,158 +176,12 @@ data "oblig3-A/maa.dat";
 
 solve;
 
+#What vessels are we using freight shipping in
 display y;
-
-# display {(v,c) in PTC: home_port[v] <> origin_port[c] && home_port[v] <> dest_port[c]} (home_port[v], origin_port[c], dest_port[c]);
-
-
-#N_P
-# display {i in P: exists {c in C} origin_port[c] == i};
-# display {i in C} port[i];
-# #N_D
-# display {i in P: exists {c in C} dest_port[c] == i};
-# display {i in C} port[i+cargoes];
-
-# #N_V
-
-# display {v in V, i in P: 
-#             # #inc d(v) and o(v)
-#             i == dv ||
-#             i == home_port[v] ||
-
-#             # #exclude d(v) and o(v)
-#             # i <> dv &&
-#             # i <> home_port[v] &&
-
-#             # #including d(v) but not o(v)
-#             # i <> home_port[v] &&
-#             # (i == dv ||
-#             (exists {ca in C: can_transport[v,ca]} 
-#                    (origin_port[ca] == i || dest_port[ca] == i))
-#             # )
-#         };
-
-# display {v in V, i in P: 
-#             # #inc d(v) and o(v)
-#             i == dv ||
-#             i == home_port[v] ||
-
-#             # #exclude d(v) and o(v)
-#             # i <> dv &&
-#             # i <> home_port[v] &&
-
-#             # #including d(v) but not o(v)
-#             # i <> home_port[v] &&
-#             # (i == dv ||
-#             (exists {n in N: can_transport[v,cargo[n]]} port[n])
-#             # )
-#         };
-
-# #N_P_V - all origin nodes a given vessel can be at
-# display {v in V, i in P: 
-#        i == home_port[v] ||
-#        exists {c in C: can_transport[v,c]} (origin_port[c] == i)};
-
-
-# #N_D_V - all destination nodes a given vessel can be at
-# display {v in V, i in P:
-#        i == dv ||
-#        exists {c in C: can_transport[v,c]} (dest_port[c] == i)};
-
-#A_v - all arch a given vessel can transverse
-
-# display {v in V, c in C, i in P, j in P:
-#                 can_transport[v,c] && 
-#                 (exists {ca in C: can_transport[v,ca]} 
-#                     (dest_port[ca] == i || origin_port[ca] == i) || i == home_port[v]) && #i should be in N_V and we can go from 
-#                 (exists {ca in C: can_transport[v,ca]} 
-#                     (dest_port[ca] == j || origin_port[ca] == j) || j==dv) #j should be in N_V or be dv
-#         } x[i,j,v];
-
-# display {v in V, i in P, j in P:
-#                 (i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i) &&
-#                 (j == dv || exists {n in N: can_transport[v,cargo[n]]} port[n] == j)
-#         } x[i,j,v];
-# test (2)
-
-# display{c in C, i in {port[c]}, v in V, j in P:
-#             can_transport[v,c] &&
-#             (j == dv || exists {n in N: can_transport[v,cargo[n]]} port[n] == j)
-#         } (v,c,i,j,x[i,j,v]);
-
-#test check (4)
-# display {v in V, (v,home_port[v],j) in A} (home_port[v],x[home_port[v],j,v]);
-
-# display {v in V, i in P,(v,i,j) in A: 
-#             i <> home_port[v] &&
-#             i <> dv &&
-#             (exists {n in N: can_transport[v,cargo[n]]} port[n] == i) &&
-#             (j == dv || j== home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == j)
-#         } (x[i,j,v]-x[j,i,v]);
-
-#test (5)
-
-# display {v in V, i in P:
-#             dv <> i &&
-#             (i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i)
-#         } x[i,dv,v];
-
-
-#test (6)
-
-# display {v in V, j in C, i in N:
-#             can_transport[v,j] &&
-#             can_transport[v,cargo[i]]
-#         } (v, j, i, port[j], port[i], x[port[i],port[j],v]);
-
-# display l;
-# display t;
-
-#test (7)
-
-# display {v in V, c in C, npj in {origin_port[c]}, (v,i,npj) in A:
-#             can_transport[v,c] && 
-#             (exists {n in N: can_transport[v,cargo[n]]} port[n] == i) #i should be in N_V and we can go from
-#         };
-
-
-# test (8)
-
-# display {v in V, c in C: can_transport[v,c]}
-#      (v,c,origin_port[c],l[v,origin_port[c]],capacity[v]);
-
-#test (11)
-
-# display {v in V, 
-#             c in C, 
-#             i in {origin_port[c]},
-#             ni in {dest_port[c]}: 
-#                 can_transport[v,c] && i <> ni
-#     }(t[v,c,"Pickup"],travel_time[v,i,ni],t[v,c,"Delivery"]);
-#test (12)
-
-# display 
-#     {v in V, c in C: 
-#         can_transport[v,c]
-#     } (lower_pickup[c],upper_pickup[c],lower_delivery[c],upper_delivery[c]);
-
-# display t;
-
-
-# display NV;
-# display Av;
-
-
-# display {v in V, i in P, j in N:
-#         #all nodes we can come from (inc home port)
-#         (i == home_port[v] || exists {n in N: can_transport[v,cargo[n]]} port[n] == i) && 
-#         #All port we go to (exclude D(V) as it should not cost anything)
-#         can_transport[v,cargo[j]]
-#     } (v,i,port[j]);
-
-# display {(v, i, j) in Av} (v,i,j)
-
+#Whats our route
 display {v in V, i in P, j in P: x[i,j,v]} (i,j,x[i,j,v]);
+
+
 
 display {v in V, j in N} (sum {i in P:
         #all nodes we can come from (inc home port)
@@ -344,8 +190,6 @@ display {v in V, j in N} (sum {i in P:
         can_transport[v,cargo[j]]
     } (x[i,port[j],v] * (travel_cost[v,i,port[j]] + port_cost[v,j])), t[v,j],l[v,j]);
 
-# display {v in V, c in C, i in {port[c]},npi in {port[c+cargoes]}: 
-#                 can_transport[v, c]
-#         } (v,c,i,npi);
+display Av;
 
 ;
