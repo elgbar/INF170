@@ -64,7 +64,7 @@ param travel_time {A} >= 0;           #travel time (in hours)
 param travel_cost {A} >= 0;           #travel cost (in �)
 
 set Nv := {v in V, n in N, i in P: (n == -1 && i == home_port[v]) || (n == 0 && i == dv) || (n >= 1 && can_transport[v,cargo[n]] && port[n] == i)};
-set Av := {v in V, (v,n,i) in Nv, (v,m,j) in Nv: n != dn && m != hn && m != n};
+set Av := {v in V, (v,n,i) in Nv, (v,m,j) in Nv: n != dn && m != hn};
 
 set NP := {n in N: 1 <= n <= cargoes};
 set ND := {n in N: n > cargoes};
@@ -81,69 +81,96 @@ var y {C} binary;        #whether cargo is transported by the available vessel f
 #(1)
 minimize Z:
     sum {v in V, (v,n,i,m,j) in Av: m <> dn} 
-        x[i,j,v] * (travel_cost[v,i,j] + port_cost[v,m]) +
-    sum {c in C} nt_cost[c] * y[c]
+        x[i,j,v] * (travel_cost[v,i,j] + port_cost[v,m]) 
+    + sum {c in C} nt_cost[c] * y[c]
 ;
+
+subject to hard_y {c in C}:
+    y[c] == if c mod 2 then 0 else 1;
+
+subject to v1:
+    x[home_port[1], port[3],1] + 
+    x[port[3],port[3+cargoes],1] +
+    x[port[3+cargoes],dv,1] 
+    = 3;
+
+subject to v2:
+    x[home_port[2], port[7],2] + 
+    x[port[7],port[1],2] +
+    x[port[1],port[7+cargoes],2] +
+    x[port[7+cargoes],port[1+cargoes],2] +
+    x[port[1+cargoes],dv,2] 
+    = 5;
+
+subject to v3:
+    x[home_port[3], port[5],3] + 
+    x[port[5],port[5+cargoes],3] +
+    x[port[5+cargoes],dv,3] 
+    = 3;
+
 
 # (2)
 # Each cargo is picked up or handled by spot charter
-subject to all_cargo_handled {n in NP, i in {port[n]}}:
-    sum {v in V, (v,n,i,m,j) in Av} x[i,j,v] + y[n] = 1;
+# subject to all_cargo_handled {n in NP, i in {port[n]}}:
+#     sum {v in V, (v,n,i,m,j) in Av} x[i,j,v] + y[n] = 1;
 
-#(3)
-#all vessels move from home port to any other port (or D(v))
-subject to vessels_move_from_home_port {v in V}:
-    sum {(v,m,j) in Nv: m <> hn} x[home_port[v], j, v] = 1;
+# #(3)
+# #all vessels move from home port to any other port (or D(v))
+# subject to vessels_move_from_home_port {v in V}:
+#     sum {(v,m,j) in Nv: m <> hn} x[home_port[v], j, v] = 1;
 
-#(4)
-#if we go into a port we go out of it (minus home and destination port)
-subject to connected_route {v in V, (v,n,i) in Nv: n >= 1}:
-    sum {(v,n,i,m,j) in Av} x[i,j,v] - sum {(v,m,j,n,i) in Av} x[j,i,v] = 0;
+# #(4)
+# #if we go into a port we go out of it (minus home and destination port)
+# subject to connected_route {v in V, (v,n,i) in Nv: n >= 1}:
+#     sum {(v,n,i,m,j) in Av} x[i,j,v] - sum {(v,m,j,n,i) in Av} x[j,i,v] = 0;
 
-#(5)
-#all vessels moves to d(v) eventually
-subject to arrive {v in V}:
-    sum {(v,n,i) in Nv: n <> dn} x[i,dv,v] = 1;
+# #(5)
+# #all vessels moves to d(v) eventually
+# subject to arrive {v in V}:
+#     sum {(v,n,i) in Nv: n <> dn} x[i,dv,v] = 1;
 
-#(6)
-subject to loading {v in V, (v,m,j) in NPV, (v,n,i,m,j) in Av: n >= 1}:
-    l[v,n] + size[m] - l[v,m] <= capacity[v] * (1 - x[i,j,v]);
+# #(6)
+# subject to loading {v in V, (v,m,j) in NPV, (v,n,i,m,j) in Av: n >= 1}:
+#     l[v,n] + size[m] - l[v,m] <= capacity[v] * (1 - x[i,j,v]);
 
-#(7)
-subject to unloading {v in V, (v,m,j) in NPV, (v,n,i,cm,cj) in Av: n >= 1 && cm = m+cargoes}:
-    l[v,n] - size[m] - l[v,cm] <= capacity[v] * (1 - x[i,cj,v]);
+# #(7)
+# subject to unloading {v in V, (v,m,j) in NPV, (v,n,i,cm,cj) in Av: n >= 1 && cm = m+cargoes}:
+#     l[v,n] - size[m] - l[v,cm] <= capacity[v] * (1 - x[i,cj,v]);
 
-#(8)
-#The load onboard should be positive and less than capacity
-subject to vessel_capacity {(v,n,i) in NPV}:
-    0 <= l[v,n] <= capacity[v];
+# #(8)
+# #The load onboard should be positive and less than capacity
+# subject to vessel_capacity {(v,n,i) in NPV}:
+#     0 <= l[v,n] <= capacity[v];
 
-#(9)
-#Arrive within the time window
-subject to total_travel_time {v in V, (v,n,i,m,j) in Av: m <> dn}:
-    t[v,n] + (travel_time[v,i,j] + port_time[v,m]) - t[v,m] 
-        <= (upper_time[n] + (travel_time[v,i,j] + port_time[v,m])) * (1-x[i, j, v]);
+# #(9)
+# #Arrive within the time window
+# subject to total_travel_time {v in V, (v,n,i,m,j) in Av: m <> dn}:
+#     t[v,n] + (travel_time[v,i,j] + port_time[v,m]) - t[v,m] 
+#         <= (upper_time[n] + (travel_time[v,i,j] + port_time[v,m])) * (1-x[i, j, v]);
 
-#(10)
-#you should visit loading and unloading with the same ship
-subject to same_ship_loaded {v in V, (v,n,i) in NPV: n >= 1}:
-    sum {(v,n,i,m,j) in Av} x[i,j,v] -
-    sum {(v,n,i,m,j) in Av: 1 <= n <= cargoes} x[port[n+cargoes],j,v] = 0;
+# #(10)
+# #you should visit loading and unloading with the same ship
+# subject to same_ship_loaded {v in V, (v,n,i) in NPV: n >= 1}:
+#     sum {(v,n,i,m,j) in Av} x[i,j,v] -
+#     sum {(v,n,i,m,j) in Av: 1 <= n <= cargoes} x[port[n+cargoes],j,v] = 0;
 
-#(11)
-#don't unload before you load
-subject to load_order {v in V, (v,n,i) in NPV}:
-    t[v,n] + (travel_time[v,i,port[n+cargoes]] + port_time[v, n + cargoes]) - t[v,n + cargoes] <= 0;
+# #(11)
+# #don't unload before you load
+# subject to load_order {v in V, (v,n,i) in NPV}:
+#     t[v,n] + (travel_time[v,i,port[n+cargoes]] + port_time[v, n + cargoes]) - t[v,n + cargoes] <= 0;
 
-#(12)
-#arrive within the time window
-subject to time_window_pickup {v in V, (v,n,i) in Nv}:
-    lower_time[n] <= t[v, n] <= upper_time[n];
+# #(12)
+# #arrive within the time window
+# subject to time_window_pickup {v in V, (v,n,i) in Nv}:
+#     lower_time[n] <= t[v, n] <= upper_time[n];
 
-# #(13?)
-# #Make sure the start time for each vessel is at least at start time defined
-# subject to vessel_start_time {v in V, n in N: can_transport[v,cargo[n]]}:
-#     x[home_port[v], port[n], v] * start_time[v] <= t[v,n];
+# # #(13?)
+# # #Make sure the start time for each vessel is at least at start time defined
+# # subject to vessel_start_time {v in V, n in N: can_transport[v,cargo[n]]}:
+# #     x[home_port[v], port[n], v] * start_time[v] <= t[v,n];
+
+# subject to starting_time {v in V}:
+#     t[v,-1] = start_time[v];
 
 data "oblig3-A/maa.dat";
 

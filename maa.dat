@@ -20,8 +20,8 @@ param:                          #Q      #C‾S_i      #T lower        #T upper  
 ; 
 
 param: N: cargo port lower_time  upper_time :=
-       -1   0   0    0           0 #home
-       0    0   0    0           0 #dest
+       -1   0   0    0           9999999999 #home
+       0    0   0    0           9999999999 #dest
        1    1   17   345  	     417
        2    2   33   96  	     168
        3    3   17   715  	     787 
