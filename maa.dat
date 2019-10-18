@@ -1,14 +1,14 @@
 param ports := 39;
 param cargoes := 7;
 
-param:  #O(v)                      #K_v
+param:  #o(v)                      #K_v
     V: home_port    start_time   capacity :=
     1   8            125           13200
     2   13           106           13200
     3   31           0             16500
 ;
-        #set N_P    #set N_D             
-param:                          #Q      #C‾S_i      #T lower        #T upper           #T lower     #T upper 
+                         
+param: #set N_P     set N_D      Q       C‾S_i      T lower         T upper         T lower         T upper 
     C:  origin_port dest_port   size    nt_cost    lower_pickup    upper_pickup    lower_delivery  upper_delivery :=
     1  	17  	    37      	4601  	790000     345  	        417              345  	         1006
     2  	33  	    36      	13444  	430790     96  	            168              96  	         529
@@ -46,7 +46,11 @@ param can_transport:
     3 1 1 1 1 1 1 1
 ;
 
-param:
+#Converted from the original format given
+# to work with the node system
+# each row in the original have two rows now
+# one for origin and one for destination
+param:     # part of T       part of C
     PTC:    port_time       port_cost :=
     1 1 	 13  	           23768 
     1 3 	 17  	           23768 	    
@@ -81,8 +85,7 @@ param:
     3 14 	 18 	           31478
 ;
 
-#A_v
-param:          #T_ijv      #C_ijv
+param:         # Part of T   Part of C
     A:          travel_time travel_cost :=
      1   1   1   0   0
     2   1   1   0   0
