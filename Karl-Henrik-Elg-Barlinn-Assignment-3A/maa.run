@@ -1,0 +1,16 @@
+reset;
+model "maa.mod";
+data "maa.dat";
+
+solve;
+
+#What vessels are we using freight shipping in
+display y;
+#Whats our route (vessel, from node, to node)
+display {(v,n,i,m,j) in Av: x[v,n,i,m,j]} (v,n,m);
+
+#Display times for each vessel at each node
+display {v in V, n in N} (v,n,t[v,n]);
+
+#Display load for each vessel at each node
+display {v in V, n in N} (v,n,l[v,n]);
