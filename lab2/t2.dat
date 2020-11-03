@@ -1,0 +1,9 @@
+#  Task 2 lab 2
+
+set PRODS := A B;
+
+param max_raw := 300;
+
+param:  max_sold  min_percent  usage_rate  profit :=
+  A       110        0.8           2         40
+  B     Infinity     0             4         90

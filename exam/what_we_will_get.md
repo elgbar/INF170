@@ -1,0 +1,6 @@
+- linearization of non-linear constraints
+    - A constraint (subject to) is not linear if two variables are multiplied together
+    - Use BigM to separate them
+        - x (binary) and t are vars, T is param
+        - x * (t + T) <= 0
+        - (t + T) <= (1 - x) * M

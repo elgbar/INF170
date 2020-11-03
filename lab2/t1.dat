@@ -1,0 +1,12 @@
+# Task 1 lab 2
+set MONTH := 1 2 3 4 5 6;
+
+param storage_cost := 8;
+
+param: commit  cost :=
+  1     100     50 
+  2     250     45
+  3     190     55
+  4     140     48
+  5     220     52
+  6     110     50

@@ -1,0 +1,24 @@
+# Task 3 lab 2
+set DEPS := Cutting Insulating Sewing Packaging;
+set CLOTHES := Parka Goose Pants Gloves;
+
+param         capasity :=
+  Cutting       1000
+  Insulating    1000
+  Sewing        1000
+  Packaging     1000
+;
+
+param:     demand  profit penalty :=
+  Parka     800     30      15
+  Goose     750     40      20
+  Pants     600     20      10
+  Gloves    500     10      8
+;
+
+param dep_time:    Parka   Goose   Pants   Gloves :=
+       Cutting      0.30    0.30    0.25    0.15
+       Insulating   0.25    0.35    0.30    0.10
+       Sewing       0.45    0.50    0.40    0.22
+       Packaging    0.15    0.15    0.10    0.05
+;

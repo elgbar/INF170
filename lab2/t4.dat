@@ -1,0 +1,20 @@
+# Task 4 lab 2
+
+set TYPE := Personal Car Home Farm Commercial;
+set COMPETATIVE_TYPE := Farm Commercial;
+set HOUSE_HELP := Home Personal Car;
+
+param total_max_loans   := 12;      #mil usd
+param max_bad_depth     := 0.04;    #percent
+param min_comp_percent  := 0.40;    #percent
+param min_house_percent := 0.50;    #percent
+
+
+param:     rate    bd_ratio  :=
+ Personal   0.140   0.10
+ Car        0.130   0.07
+ Home       0.120   0.03
+ Farm       0.125   0.05
+ Commercial 0.100   0.02
+;
+

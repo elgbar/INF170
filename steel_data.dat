@@ -1,0 +1,6 @@
+
+set PROD := bands coils;
+params:   rate profit market :=
+	bands 200    25    6000
+	coils 140    30    4000
+
